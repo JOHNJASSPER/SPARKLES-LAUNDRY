@@ -114,39 +114,62 @@ async function handleRegister(e) {
 }
 
 // Handle Google OAuth
+// TODO: Replace with your Firebase project config
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+};
+
+// Initialize Firebase
+if (typeof firebase !== 'undefined') {
+    firebase.initializeApp(firebaseConfig);
+}
+
+// Handle Google OAuth
 async function handleGoogleAuth() {
     const errorMessage = document.getElementById('error-message');
 
-    // For now, show a message that Google OAuth needs to be configured
-    errorMessage.textContent = 'Google OAuth is not yet configured. Please use email/password registration.';
-    errorMessage.style.display = 'block';
+    // Reset error
+    if (errorMessage) errorMessage.style.display = 'none';
 
-    // In production, you would:
-    // 1. Initialize Firebase Auth
-    // 2. Trigger Google Sign-In popup
-    // 3. Get the ID token
-    // 4. Send to backend for verification
-    // 5. Save token and redirect
-
-    /* Example implementation:
     try {
-        const result = await firebase.auth().signInWithPopup(googleProvider);
-        const idToken = await result.user.getIdToken();
-        
+        if (typeof firebase === 'undefined') {
+            throw new Error('Firebase SDK not loaded');
+        }
+
+        // Check if config is set
+        if (firebaseConfig.apiKey === "YOUR_API_KEY") {
+            throw new Error('Google Login is not configured yet. Please contact admin.');
+        }
+
+        const provider = new firebase.auth.GoogleAuthProvider();
+        const result = await firebase.auth().signInWithPopup(provider);
+        const user = result.user;
+        const idToken = await user.getIdToken();
+
+        // Send to backend
         const response = await api.auth.googleAuth({
             idToken,
-            email: result.user.email,
-            name: result.user.displayName,
-            googleId: result.user.uid
+            email: user.email,
+            name: user.displayName,
+            googleId: user.uid
         });
-        
+
         if (response.success) {
             authHelpers.saveAuth(response.token, response.user);
             window.location.href = '/dashboard';
         }
     } catch (error) {
-        errorMessage.textContent = error.message;
-        errorMessage.style.display = 'block';
+        console.error('Google Auth Error:', error);
+        if (errorMessage) {
+            errorMessage.textContent = error.message;
+            errorMessage.style.display = 'block';
+        } else {
+            alert(error.message);
+        }
     }
-    */
 }
