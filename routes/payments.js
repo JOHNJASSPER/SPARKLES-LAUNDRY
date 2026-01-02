@@ -92,7 +92,7 @@ router.post('/create', authMiddleware, async (req, res) => {
                 demoMode: true, // Flag for frontend to show manual instructions
                 paymentData: {
                     orderId: order._id,
-                    amount: order.totalPrice,
+                    amount: usdtAmount, // Send converted USDT amount
                     currency: 'USDT',
                     paymentId: 'MANUAL_' + Date.now(),
                     walletAddress: 'TYDzsYUEpvnYmQk4zGP9sWWcTEd2MiAtW7', // Testnet/Dev wallet
