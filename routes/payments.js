@@ -20,14 +20,9 @@ function generateSignature(timestamp, nonce, body) {
         .toUpperCase();
 }
 
-// Generate random nonce
+// Generate cryptographically secure random nonce
 function generateNonce(length = 32) {
-    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let result = '';
-    for (let i = 0; i < length; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return result;
+    return crypto.randomBytes(length).toString('hex').slice(0, length);
 }
 
 // @route   POST /api/payments/create
@@ -182,10 +177,29 @@ router.post('/create', authMiddleware, async (req, res) => {
 // @access  Public (verified by signature)
 router.post('/webhook', async (req, res) => {
     try {
+        // Verify webhook signature if Binance Pay is configured
+        if (BINANCE_PAY_SECRET) {
+            const receivedSignature = req.headers['binancepay-signature'];
+            const timestamp = req.headers['binancepay-timestamp'];
+            const nonce = req.headers['binancepay-nonce'];
+
+            if (!receivedSignature || !timestamp || !nonce) {
+                console.warn('Webhook received without required headers');
+                return res.status(401).json({ returnCode: 'FAIL', returnMessage: 'Missing signature headers' });
+            }
+
+            // Verify the signature
+            const expectedSignature = generateSignature(timestamp, nonce, req.body);
+            if (receivedSignature !== expectedSignature) {
+                console.warn('Webhook signature mismatch');
+                return res.status(401).json({ returnCode: 'FAIL', returnMessage: 'Invalid signature' });
+            }
+        }
+
         const { bizType, data } = req.body;
 
         if (bizType === 'PAY') {
-            const { merchantTradeNo, orderAmount, transactTime, payerInfo } = data;
+            const { merchantTradeNo, orderAmount } = data;
 
             // Extract order ID from merchantTradeNo
             const parts = merchantTradeNo.split('_');
@@ -200,14 +214,17 @@ router.post('/webhook', async (req, res) => {
                 order.updatedAt = Date.now();
                 await order.save();
 
-                console.log(`Payment confirmed for order ${orderId}`);
+                // Payment confirmed - logged only in development
+                if (process.env.NODE_ENV !== 'production') {
+                    console.log(`Payment confirmed for order ${orderId}`);
+                }
             }
         }
 
         res.json({ returnCode: 'SUCCESS', returnMessage: null });
     } catch (error) {
-        console.error('Webhook error:', error);
-        res.json({ returnCode: 'FAIL', returnMessage: error.message });
+        console.error('Webhook error:', error.message); // Don't log full error to prevent info disclosure
+        res.json({ returnCode: 'FAIL', returnMessage: 'Processing error' });
     }
 });
 

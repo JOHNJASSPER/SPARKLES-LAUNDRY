@@ -12,8 +12,8 @@ const authMiddleware = async (req, res, next) => {
             });
         }
 
-        // Verify token
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        // Verify token with explicit algorithm to prevent algorithm confusion attacks
+        const decoded = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
 
         // Add user id to request
         req.userId = decoded.userId;

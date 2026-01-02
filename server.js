@@ -6,8 +6,27 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
+
+// Security Headers (helmet)
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "https://js.paystack.co", "https://www.gstatic.com", "https://apis.google.com"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
+            fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
+            imgSrc: ["'self'", "data:", "https:"],
+            connectSrc: ["'self'", "https://api.paystack.co", "https://bpay.binanceapi.com", "https://*.firebaseio.com", "https://identitytoolkit.googleapis.com", "https://securetoken.googleapis.com"],
+            frameSrc: ["'self'", "https://js.paystack.co", "https://accounts.google.com"],
+        }
+    },
+    crossOriginEmbedderPolicy: false, // Required for some external scripts
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 
 // Middleware
 app.use(cors());
@@ -43,6 +62,35 @@ app.use(async (req, res, next) => {
     next();
 });
 
+// Rate Limiting for auth endpoints (prevent brute-force attacks)
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10, // Limit each IP to 10 requests per windowMs
+    message: {
+        success: false,
+        message: 'Too many attempts, please try again after 15 minutes'
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+// General API rate limiter
+const apiLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000, // 1 minute
+    max: 100, // 100 requests per minute
+    message: {
+        success: false,
+        message: 'Too many requests, please slow down'
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+// Apply rate limiting to API routes
+app.use('/api/', apiLimiter);
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/register', authLimiter);
+
 // API Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/orders', require('./routes/orders'));
@@ -51,6 +99,7 @@ app.use('/api/admin', require('./routes/admin'));
 app.use('/api/payments', require('./routes/payments'));
 app.use('/api/paystack', require('./routes/paystack'));
 app.use('/api/exchange-rate', require('./routes/exchange-rate'));
+app.use('/api/config', require('./routes/config'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

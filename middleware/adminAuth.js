@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 // Admin email - can access admin panel
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@sparkles.com';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 
 const adminAuth = async (req, res, next) => {
     try {
@@ -16,8 +16,16 @@ const adminAuth = async (req, res, next) => {
             });
         }
 
-        // Verify token
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        // Verify token with explicit algorithm
+        const decoded = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
+
+        // Ensure ADMIN_EMAIL is configured
+        if (!ADMIN_EMAIL) {
+            return res.status(500).json({
+                success: false,
+                message: 'Admin access is not configured'
+            });
+        }
 
         // Get user from database
         const user = await User.findById(decoded.userId);

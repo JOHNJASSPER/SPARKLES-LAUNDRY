@@ -108,16 +108,20 @@ router.get('/:id', authMiddleware, async (req, res) => {
 });
 
 // @route   PATCH /api/orders/:id
-// @desc    Update order status (for admin use, but accessible by user for now)
-// @access  Private
+// @desc    Update order status - REMOVED: Users should not update order status
+// @access  Admin Only (moved to /api/admin/orders/:id/status)
+// This endpoint has been disabled for security reasons.
+// Users attempting to update order status will get an error.
 router.patch('/:id', authMiddleware, async (req, res) => {
+    // Users can only cancel their own orders, not change status
     try {
         const { status } = req.body;
 
-        if (!status || !['pending', 'processing', 'completed', 'delivered', 'cancelled'].includes(status)) {
-            return res.status(400).json({
+        // Only allow users to cancel their own pending orders
+        if (status !== 'cancelled') {
+            return res.status(403).json({
                 success: false,
-                message: 'Invalid status'
+                message: 'You can only cancel orders. Contact support for other changes.'
             });
         }
 
@@ -133,13 +137,21 @@ router.patch('/:id', authMiddleware, async (req, res) => {
             });
         }
 
-        order.status = status;
+        // Can only cancel pending orders
+        if (order.status !== 'pending') {
+            return res.status(400).json({
+                success: false,
+                message: 'Only pending orders can be cancelled'
+            });
+        }
+
+        order.status = 'cancelled';
         order.updatedAt = Date.now();
         await order.save();
 
         res.json({
             success: true,
-            message: 'Order status updated',
+            message: 'Order cancelled successfully',
             order
         });
     } catch (error) {

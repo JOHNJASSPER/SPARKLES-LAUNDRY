@@ -82,49 +82,84 @@ function createOrderCard(order) {
         day: 'numeric'
     });
 
-    const itemsList = order.items.map(item =>
-        `<li>${item.name} (x${item.quantity})</li>`
-    ).join('');
+    // Helper to create detail section
+    const createDetail = (iconClass, title, text) => {
+        const div = document.createElement('div');
+        div.className = 'order-detail';
 
-    card.innerHTML = `
-        <div class="order-header">
-            <div class="order-id">Order #${order._id.slice(-8).toUpperCase()}</div>
-            <span class="order-status status-${order.status}">${order.status}</span>
-        </div>
-        
-        <div class="order-details">
-            <div class="order-detail">
-                <i class="fa-solid fa-calendar"></i>
-                <div class="order-detail-content">
-                    <h4>Date</h4>
-                    <p>${date}</p>
-                </div>
-            </div>
-            <div class="order-detail">
-                <i class="fa-solid fa-tag"></i>
-                <div class="order-detail-content">
-                    <h4>Service Type</h4>
-                    <p>${formatServiceType(order.serviceType)}</p>
-                </div>
-            </div>
-            <div class="order-detail">
-                <i class="fa-solid fa-location-dot"></i>
-                <div class="order-detail-content">
-                    <h4>Pickup Address</h4>
-                    <p>${order.pickupAddress}</p>
-                </div>
-            </div>
-        </div>
+        const icon = document.createElement('i');
+        icon.className = iconClass;
 
-        <div class="order-items">
-            <h4>Items:</h4>
-            <ul>${itemsList}</ul>
-        </div>
+        const content = document.createElement('div');
+        content.className = 'order-detail-content';
 
-        <div class="order-total">
-            <h3>₦${order.totalPrice.toLocaleString()}</h3>
-        </div>
-    `;
+        const h4 = document.createElement('h4');
+        h4.textContent = title;
+
+        const p = document.createElement('p');
+        p.textContent = text;
+
+        content.appendChild(h4);
+        content.appendChild(p);
+
+        div.appendChild(icon);
+        div.appendChild(content);
+        return div;
+    };
+
+    // Header
+    const header = document.createElement('div');
+    header.className = 'order-header';
+
+    const idDiv = document.createElement('div');
+    idDiv.className = 'order-id';
+    idDiv.textContent = `Order #${order._id.slice(-8).toUpperCase()}`;
+
+    const statusSpan = document.createElement('span');
+    statusSpan.className = `order-status status-${order.status}`;
+    statusSpan.textContent = order.status;
+
+    header.appendChild(idDiv);
+    header.appendChild(statusSpan);
+
+    // Details
+    const details = document.createElement('div');
+    details.className = 'order-details';
+
+    details.appendChild(createDetail('fa-solid fa-calendar', 'Date', date));
+    details.appendChild(createDetail('fa-solid fa-tag', 'Service Type', formatServiceType(order.serviceType)));
+    details.appendChild(createDetail('fa-solid fa-location-dot', 'Pickup Address', order.pickupAddress));
+
+    // Items
+    const itemsDiv = document.createElement('div');
+    itemsDiv.className = 'order-items';
+
+    const h4Items = document.createElement('h4');
+    h4Items.textContent = 'Items:';
+
+    const ul = document.createElement('ul');
+    order.items.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = `${item.name} (x${item.quantity})`;
+        ul.appendChild(li);
+    });
+
+    itemsDiv.appendChild(h4Items);
+    itemsDiv.appendChild(ul);
+
+    // Total
+    const totalDiv = document.createElement('div');
+    totalDiv.className = 'order-total';
+
+    const h3Total = document.createElement('h3');
+    h3Total.textContent = `₦${order.totalPrice.toLocaleString()}`;
+
+    totalDiv.appendChild(h3Total);
+
+    card.appendChild(header);
+    card.appendChild(details);
+    card.appendChild(itemsDiv);
+    card.appendChild(totalDiv);
 
     return card;
 }

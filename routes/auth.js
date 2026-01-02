@@ -25,17 +25,17 @@ router.post('/register', [
 
         const { name, email, password } = req.body;
 
-        // Check if user already exists
+        // Check if user already exists - use generic message to prevent enumeration
         let user = await User.findOne({ email });
         if (user) {
             return res.status(400).json({
                 success: false,
-                message: 'User already exists with this email'
+                message: 'Registration failed. Please try again or use a different email.'
             });
         }
 
-        // Hash password
-        const salt = await bcrypt.genSalt(10);
+        // Hash password with 12 rounds (increased from 10 for better security)
+        const salt = await bcrypt.genSalt(12);
         const hashedPassword = await bcrypt.hash(password, salt);
 
         // Create new user
@@ -102,11 +102,11 @@ router.post('/login', [
             });
         }
 
-        // Check if user registered with Google
+        // Check if user registered with Google - use same generic message
         if (user.authProvider === 'google') {
             return res.status(400).json({
                 success: false,
-                message: 'Please login with Google'
+                message: 'Invalid credentials'
             });
         }
 
@@ -228,7 +228,7 @@ router.get('/verify', async (req, res) => {
             });
         }
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
         const user = await User.findById(decoded.userId).select('-password');
 
         if (!user) {

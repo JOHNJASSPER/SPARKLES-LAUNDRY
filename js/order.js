@@ -146,28 +146,52 @@ function createItemCard(item) {
     const card = document.createElement('div');
     card.className = 'item-card';
 
-    card.innerHTML = `
-        <div class="item-header">
-            <h4>${item.name}</h4>
-            <span class="item-price">₦${item.price.toLocaleString()}</span>
-        </div>
-        <div class="item-quantity">
-            <button class="qty-btn minus" data-item="${item.name}" data-price="${item.price}">
-                <i class="fa-solid fa-minus"></i>
-            </button>
-            <input type="number" class="qty-input" value="0" min="0" readonly 
-                data-item="${item.name}" data-price="${item.price}">
-            <button class="qty-btn plus" data-item="${item.name}" data-price="${item.price}">
-                <i class="fa-solid fa-plus"></i>
-            </button>
-        </div>
-    `;
+    // Safe DOM creation
+    const itemHeader = document.createElement('div');
+    itemHeader.className = 'item-header';
 
-    // Setup quantity buttons
-    const minusBtn = card.querySelector('.minus');
-    const plusBtn = card.querySelector('.plus');
-    const qtyInput = card.querySelector('.qty-input');
+    const h4 = document.createElement('h4');
+    h4.textContent = item.name;
 
+    const priceSpan = document.createElement('span');
+    priceSpan.className = 'item-price';
+    priceSpan.textContent = `₦${item.price.toLocaleString()}`;
+
+    itemHeader.appendChild(h4);
+    itemHeader.appendChild(priceSpan);
+
+    const itemQuantity = document.createElement('div');
+    itemQuantity.className = 'item-quantity';
+
+    const minusBtn = document.createElement('button');
+    minusBtn.className = 'qty-btn minus';
+    minusBtn.dataset.item = item.name;
+    minusBtn.dataset.price = item.price;
+    minusBtn.innerHTML = '<i class="fa-solid fa-minus"></i>'; // Safe: static HTML
+
+    const qtyInput = document.createElement('input');
+    qtyInput.type = 'number';
+    qtyInput.className = 'qty-input';
+    qtyInput.value = '0';
+    qtyInput.min = '0';
+    qtyInput.readOnly = true;
+    qtyInput.dataset.item = item.name;
+    qtyInput.dataset.price = item.price;
+
+    const plusBtn = document.createElement('button');
+    plusBtn.className = 'qty-btn plus';
+    plusBtn.dataset.item = item.name;
+    plusBtn.dataset.price = item.price;
+    plusBtn.innerHTML = '<i class="fa-solid fa-plus"></i>'; // Safe: static HTML
+
+    itemQuantity.appendChild(minusBtn);
+    itemQuantity.appendChild(qtyInput);
+    itemQuantity.appendChild(plusBtn);
+
+    card.appendChild(itemHeader);
+    card.appendChild(itemQuantity);
+
+    // Add event listeners directly to the created buttons
     minusBtn.addEventListener('click', () => {
         let qty = parseInt(qtyInput.value);
         if (qty > 0) {
@@ -228,22 +252,35 @@ function updateOrderSummary() {
 
     // Calculate total
     let total = 0;
-    let summaryHTML = '';
+
+    summaryItems.innerHTML = '';
 
     selectedItems.forEach(item => {
         const itemTotal = item.price * item.quantity;
         total += itemTotal;
 
-        summaryHTML += `
-            <div class="summary-item">
-                <span class="summary-item-name">${item.name}</span>
-                <span class="summary-item-qty">x${item.quantity}</span>
-                <span class="summary-item-price">₦${itemTotal.toLocaleString()}</span>
-            </div>
-        `;
+        const summaryItem = document.createElement('div');
+        summaryItem.className = 'summary-item';
+
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'summary-item-name';
+        nameSpan.textContent = item.name;
+
+        const qtySpan = document.createElement('span');
+        qtySpan.className = 'summary-item-qty';
+        qtySpan.textContent = `x${item.quantity}`;
+
+        const priceSpan = document.createElement('span');
+        priceSpan.className = 'summary-item-price';
+        priceSpan.textContent = `₦${itemTotal.toLocaleString()}`;
+
+        summaryItem.appendChild(nameSpan);
+        summaryItem.appendChild(qtySpan);
+        summaryItem.appendChild(priceSpan);
+
+        summaryItems.appendChild(summaryItem);
     });
 
-    summaryItems.innerHTML = summaryHTML;
     totalPrice.textContent = `₦${total.toLocaleString()}`;
 
     // Update USDT estimate
@@ -362,29 +399,76 @@ async function initializeBinancePayment(order) {
                 const currency = data.paymentData.currency;
 
                 // Create a simple modal for manual transfer instructions
-                const modalHtml = `
-                        <div id="manual-payment-modal" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;justify-content:center;align-items:center;z-index:1000;">
-                            <div style="background:white;padding:30px;border-radius:15px;max-width:500px;width:90%;text-align:center;box-shadow:0 4px 6px rgba(0,0,0,0.1);">
-                                <h3 style="color:#023e8a;margin-bottom:15px;"><i class="fa-brands fa-bitcoin"></i> USDT Manual Transfer (Testnet)</h3>
-                                <p style="margin-bottom:20px;color:#666;">Binance Pay is in test mode. Please send the exact amount to the wallet below.</p>
-                                
-                                <div style="background:#f8f9fa;padding:15px;border-radius:8px;margin-bottom:20px;border:1px solid #dee2e6;">
-                                    <p style="font-size:0.9rem;color:#888;margin-bottom:5px;">Amount:</p>
-                                    <h2 style="color:#023e8a;margin:0;">${amount.toFixed(2)} ${currency}</h2>
-                                </div>
+                const modalOverlay = document.createElement('div');
+                modalOverlay.id = 'manual-payment-modal';
+                Object.assign(modalOverlay.style, {
+                    position: 'fixed', top: '0', left: '0', width: '100%', height: '100%',
+                    background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center',
+                    alignItems: 'center', zIndex: '1000'
+                });
 
-                                <div style="background:#f8f9fa;padding:15px;border-radius:8px;margin-bottom:25px;border:1px solid #dee2e6;word-break:break-all;">
-                                    <p style="font-size:0.9rem;color:#888;margin-bottom:5px;">TRC20 Wallet Address:</p>
-                                    <p style="font-family:monospace;font-size:1.1rem;font-weight:bold;margin:0;user-select:all;">${walletAddress}</p>
-                                </div>
+                const modalContent = document.createElement('div');
+                Object.assign(modalContent.style, {
+                    background: 'white', padding: '30px', borderRadius: '15px',
+                    maxWidth: '500px', width: '90%', textAlign: 'center',
+                    boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                });
 
-                                <button onclick="window.location.href='/dashboard'" style="background:#00b4d8;color:white;border:none;padding:12px 25px;border-radius:8px;font-size:1rem;cursor:pointer;width:100%;">
-                                    I Have Sent the Payment
-                                </button>
-                            </div>
-                        </div>
-                     `;
-                document.body.insertAdjacentHTML('beforeend', modalHtml);
+                const h3 = document.createElement('h3');
+                Object.assign(h3.style, { color: '#023e8a', marginBottom: '15px' });
+                h3.innerHTML = '<i class="fa-brands fa-bitcoin"></i> USDT Manual Transfer (Testnet)'; // Icon is safe
+
+                const pDesc = document.createElement('p');
+                Object.assign(pDesc.style, { marginBottom: '20px', color: '#666' });
+                pDesc.textContent = 'Binance Pay is in test mode. Please send the exact amount to the wallet below.';
+
+                const amountDiv = document.createElement('div');
+                Object.assign(amountDiv.style, {
+                    background: '#f8f9fa', padding: '15px', borderRadius: '8px',
+                    marginBottom: '20px', border: '1px solid #dee2e6'
+                });
+
+                const pAmountLabel = document.createElement('p');
+                Object.assign(pAmountLabel.style, { fontSize: '0.9rem', color: '#888', marginBottom: '5px' });
+                pAmountLabel.textContent = 'Amount:';
+
+                const h2Amount = document.createElement('h2');
+                Object.assign(h2Amount.style, { color: '#023e8a', margin: '0' });
+                h2Amount.textContent = `${amount.toFixed(2)} ${currency}`;
+
+                amountDiv.append(pAmountLabel, h2Amount);
+
+                const walletDiv = document.createElement('div');
+                Object.assign(walletDiv.style, {
+                    background: '#f8f9fa', padding: '15px', borderRadius: '8px',
+                    marginBottom: '25px', border: '1px solid #dee2e6', wordBreak: 'break-all'
+                });
+
+                const pWalletLabel = document.createElement('p');
+                Object.assign(pWalletLabel.style, { fontSize: '0.9rem', color: '#888', marginBottom: '5px' });
+                pWalletLabel.textContent = 'TRC20 Wallet Address:';
+
+                const pWallet = document.createElement('p');
+                Object.assign(pWallet.style, {
+                    fontFamily: 'monospace', fontSize: '1.1rem', fontWeight: 'bold',
+                    margin: '0', userSelect: 'all'
+                });
+                pWallet.textContent = walletAddress; // Safe injection
+
+                walletDiv.append(pWalletLabel, pWallet);
+
+                const confirmBtn = document.createElement('button');
+                Object.assign(confirmBtn.style, {
+                    background: '#00b4d8', color: 'white', border: 'none',
+                    padding: '12px 25px', borderRadius: '8px', fontSize: '1rem',
+                    cursor: 'pointer', width: '100%'
+                });
+                confirmBtn.textContent = 'I Have Sent the Payment';
+                confirmBtn.onclick = () => window.location.href = '/dashboard';
+
+                modalContent.append(h3, pDesc, amountDiv, walletDiv, confirmBtn);
+                modalOverlay.appendChild(modalContent);
+                document.body.appendChild(modalOverlay);
             } else {
                 throw new Error('Invalid payment response');
             }
@@ -405,8 +489,12 @@ async function initializePayment(order) {
     const submitBtn = document.getElementById('submit-order-btn');
 
     try {
-        // Get Paystack public key
-        const PAYSTACK_PUBLIC_KEY = 'pk_test_e0fb17876fd0a75f5192f5cb643e68a98912364e';
+        // Get Paystack public key from backend
+        const configResponse = await api.config.get();
+        if (!configResponse.success || !configResponse.paystackPublicKey) {
+            throw new Error('Failed to load payment configuration');
+        }
+        const PAYSTACK_PUBLIC_KEY = configResponse.paystackPublicKey;
 
         // Initialize payment with backend
         const token = localStorage.getItem('token');

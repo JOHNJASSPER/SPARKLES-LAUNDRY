@@ -115,31 +115,72 @@ function renderOrders(orders) {
         const customerName = order.userId?.name || 'Unknown';
         const customerEmail = order.userId?.email || 'N/A';
 
-        row.innerHTML = `
-            <td class="order-id">#${order._id.slice(-8).toUpperCase()}</td>
-            <td>
-                <div class="customer-info">
-                    <span class="customer-name">${customerName}</span>
-                    <span class="customer-email">${customerEmail}</span>
-                </div>
-            </td>
-            <td>${formatServiceType(order.serviceType)}</td>
-            <td><strong>$${order.totalPrice.toFixed(2)}</strong></td>
-            <td>
-                <span class="payment-badge payment-${order.paymentStatus || 'pending'}">
-                    ${order.paymentStatus || 'pending'}
-                </span>
-            </td>
-            <td>
-                <span class="order-status status-${order.status}">${order.status}</span>
-            </td>
-            <td>${date}</td>
-            <td>
-                <button class="action-btn edit" onclick="openStatusModal('${order._id}', '${order.status}')">
-                    <i class="fa-solid fa-edit"></i> Update
-                </button>
-            </td>
-        `;
+        // Order ID
+        const tdId = document.createElement('td');
+        tdId.className = 'order-id';
+        tdId.textContent = '#' + order._id.slice(-8).toUpperCase();
+        row.appendChild(tdId);
+
+        // Customer Info
+        const tdCustomer = document.createElement('td');
+        const divInfo = document.createElement('div');
+        divInfo.className = 'customer-info';
+
+        const spanName = document.createElement('span');
+        spanName.className = 'customer-name';
+        spanName.textContent = customerName;
+
+        const spanEmail = document.createElement('span');
+        spanEmail.className = 'customer-email';
+        spanEmail.textContent = customerEmail;
+
+        divInfo.appendChild(spanName);
+        divInfo.appendChild(spanEmail);
+        tdCustomer.appendChild(divInfo);
+        row.appendChild(tdCustomer);
+
+        // Service Type
+        const tdService = document.createElement('td');
+        tdService.textContent = formatServiceType(order.serviceType);
+        row.appendChild(tdService);
+
+        // Price
+        const tdPrice = document.createElement('td');
+        const strongPrice = document.createElement('strong');
+        strongPrice.textContent = '$' + order.totalPrice.toFixed(2);
+        tdPrice.appendChild(strongPrice);
+        row.appendChild(tdPrice);
+
+        // Payment Status
+        const tdPayment = document.createElement('td');
+        const spanPayment = document.createElement('span');
+        const pStatus = order.paymentStatus || 'pending';
+        spanPayment.className = `payment-badge payment-${pStatus}`;
+        spanPayment.textContent = pStatus;
+        tdPayment.appendChild(spanPayment);
+        row.appendChild(tdPayment);
+
+        // Order Status
+        const tdStatus = document.createElement('td');
+        const spanStatus = document.createElement('span');
+        spanStatus.className = `order-status status-${order.status}`;
+        spanStatus.textContent = order.status;
+        tdStatus.appendChild(spanStatus);
+        row.appendChild(tdStatus);
+
+        // Date
+        const tdDate = document.createElement('td');
+        tdDate.textContent = date;
+        row.appendChild(tdDate);
+
+        // Actions
+        const tdActions = document.createElement('td');
+        const btnEdit = document.createElement('button');
+        btnEdit.className = 'action-btn edit';
+        btnEdit.innerHTML = '<i class="fa-solid fa-edit"></i> Update'; // Safe static HTML
+        btnEdit.onclick = () => openStatusModal(order._id, order.status);
+        tdActions.appendChild(btnEdit);
+        row.appendChild(tdActions);
 
         tbody.appendChild(row);
     });

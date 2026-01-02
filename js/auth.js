@@ -114,23 +114,6 @@ async function handleRegister(e) {
 }
 
 // Handle Google OAuth
-// Firebase Configuration
-const firebaseConfig = {
-    apiKey: "AIzaSyDA-NiV3FEKy6_yqYQj8oVNeIWVxBBFH4A",
-    authDomain: "sparkles-b702c.firebaseapp.com",
-    projectId: "sparkles-b702c",
-    storageBucket: "sparkles-b702c.firebasestorage.app",
-    messagingSenderId: "554387545502",
-    appId: "1:554387545502:web:85f5f5fee088ac25340a8f",
-    measurementId: "G-E2LD7Q5CGN"
-};
-
-// Initialize Firebase
-if (typeof firebase !== 'undefined') {
-    firebase.initializeApp(firebaseConfig);
-}
-
-// Handle Google OAuth
 async function handleGoogleAuth() {
     const errorMessage = document.getElementById('error-message');
 
@@ -140,6 +123,16 @@ async function handleGoogleAuth() {
     try {
         if (typeof firebase === 'undefined') {
             throw new Error('Firebase SDK not loaded');
+        }
+
+        // Initialize Firebase if not already initialized
+        if (!firebase.apps.length) {
+            const configResponse = await api.config.get();
+            if (configResponse.success && configResponse.firebaseConfig) {
+                firebase.initializeApp(configResponse.firebaseConfig);
+            } else {
+                throw new Error('Failed to load Firebase configuration');
+            }
         }
 
         const provider = new firebase.auth.GoogleAuthProvider();

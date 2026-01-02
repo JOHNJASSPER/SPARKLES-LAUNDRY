@@ -82,6 +82,11 @@ const api = {
             method: 'POST',
             body: JSON.stringify({ items })
         })
+    },
+
+    // Config endpoint
+    config: {
+        get: () => apiRequest('/config')
     }
 };
 
