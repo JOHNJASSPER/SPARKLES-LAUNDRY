@@ -33,6 +33,13 @@ function generateNonce(length = 32) {
 // @route   POST /api/payments/create
 // @desc    Create a Binance Pay order
 // @access  Private
+const ExchangeRate = require('../models/ExchangeRate');
+
+// ... (existing imports)
+
+// @route   POST /api/payments/create
+// @desc    Create a Binance Pay order
+// @access  Private
 router.post('/create', authMiddleware, async (req, res) => {
     try {
         const { orderId } = req.body;
@@ -62,29 +69,25 @@ router.post('/create', authMiddleware, async (req, res) => {
             });
         }
 
-        // If Binance Pay is not configured, return a simulated payment URL
+        // Get current exchange rate to calculate USDT amount
+        const exchangeRateDoc = await ExchangeRate.getRate();
+        const usdtRate = exchangeRateDoc.usdtToNgn;
+        const usdtAmount = order.totalPrice / usdtRate;
+
+        // Enforce Minimum Payment Amount ($5 USDT)
+        if (usdtAmount < 5) {
+            return res.status(400).json({
+                success: false,
+                message: `Minimum USDT payment is 5.00 USDT. Your order is ~${usdtAmount.toFixed(2)} USDT.`
+            });
+        }
+
+        // check for Binance Pay Keys
         if (!BINANCE_PAY_API_KEY || !BINANCE_PAY_SECRET) {
-            // For testing/demo mode - simulate payment
-            const demoPaymentId = 'DEMO_' + Date.now();
-
-            order.paymentId = demoPaymentId;
-            order.paymentMethod = 'crypto';
-            await order.save();
-
-            return res.json({
-                success: true,
-                message: 'Demo mode - Binance Pay not configured',
-                demoMode: true,
-                paymentData: {
-                    orderId: order._id,
-                    amount: order.totalPrice,
-                    currency: 'USDT',
-                    paymentId: demoPaymentId,
-                    // Demo wallet address for display
-                    walletAddress: 'TYDzsYUEpvnYmQk4zGP9sWWcTEd2MiAtW7',
-                    network: 'TRC20',
-                    qrCodeUrl: null
-                }
+            console.error('Binance Pay API keys not configured');
+            return res.status(500).json({
+                success: false,
+                message: 'USDT payment is currently unavailable (Configuration Error)'
             });
         }
 

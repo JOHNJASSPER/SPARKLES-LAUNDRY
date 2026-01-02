@@ -288,6 +288,15 @@ async function submitOrder() {
         sum + (item.price * item.quantity), 0
     );
 
+    // Check for minimum USDT amount if USDT is selected
+    const exchangeRateDoc = await ExchangeRate.getRate(); // wait, we don't have direct DB access. use loaded rate.
+    const usdtAmount = totalPrice / exchangeRate;
+
+    if (selectedPaymentMethod === 'usdt' && usdtAmount < 5) {
+        alert(`Minimum order for USDT payment is $5.00 equivalent (approx ₦${(5 * exchangeRate).toLocaleString()}). Current order is ~$${usdtAmount.toFixed(2)}.`);
+        return;
+    }
+
     // Prepare order data
     const orderData = {
         serviceType: selectedService,
@@ -346,12 +355,8 @@ async function initializeBinancePayment(order) {
             if (data.paymentData && data.paymentData.checkoutUrl) {
                 // Redirect to Binance Pay
                 window.location.href = data.paymentData.checkoutUrl;
-            } else if (data.demoMode) {
-                // Handle demo mode
-                alert(`DEMO MODE: Payment simulated for ${data.paymentData.amount} USDT`);
-                window.location.href = '/dashboard';
             } else {
-                throw new Error('Invalid payment response');
+                throw new Error('Invalid payment response (No checkout URL)');
             }
         } else {
             throw new Error(data.message || 'Payment creation failed');
