@@ -114,14 +114,15 @@ async function handleRegister(e) {
 }
 
 // Handle Google OAuth
-// TODO: Replace with your Firebase project config
+// Firebase Configuration
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyDA-NiV3FEKy6_yqYQj8oVNeIWVxBBFH4A",
+    authDomain: "sparkles-b702c.firebaseapp.com",
+    projectId: "sparkles-b702c",
+    storageBucket: "sparkles-b702c.firebasestorage.app",
+    messagingSenderId: "554387545502",
+    appId: "1:554387545502:web:85f5f5fee088ac25340a8f",
+    measurementId: "G-E2LD7Q5CGN"
 };
 
 // Initialize Firebase
@@ -139,11 +140,6 @@ async function handleGoogleAuth() {
     try {
         if (typeof firebase === 'undefined') {
             throw new Error('Firebase SDK not loaded');
-        }
-
-        // Check if config is set
-        if (firebaseConfig.apiKey === "YOUR_API_KEY") {
-            throw new Error('Google Login is not configured yet. Please contact admin.');
         }
 
         const provider = new firebase.auth.GoogleAuthProvider();
