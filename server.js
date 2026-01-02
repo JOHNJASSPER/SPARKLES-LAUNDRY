@@ -50,6 +50,7 @@ app.use('/api/services', require('./routes/services'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/payments', require('./routes/payments'));
 app.use('/api/paystack', require('./routes/paystack'));
+app.use('/api/exchange-rate', require('./routes/exchange-rate'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
