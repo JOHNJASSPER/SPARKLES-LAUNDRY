@@ -164,7 +164,7 @@ router.post('/create', authMiddleware, async (req, res) => {
         }
 
     } catch (error) {
-        console.error('Create payment error:', error);
+        if (process.env.NODE_ENV !== 'production') console.error('Create payment error:', error);
         res.status(500).json({
             success: false,
             message: 'Server error creating payment'
@@ -252,7 +252,7 @@ router.get('/status/:orderId', authMiddleware, async (req, res) => {
             paidCurrency: order.paidCurrency
         });
     } catch (error) {
-        console.error('Payment status error:', error);
+        if (process.env.NODE_ENV !== 'production') console.error('Payment status error:', error);
         res.status(500).json({
             success: false,
             message: 'Error checking payment status'
@@ -290,7 +290,7 @@ router.post('/simulate-payment', authMiddleware, async (req, res) => {
             order
         });
     } catch (error) {
-        console.error('Simulate payment error:', error);
+        if (process.env.NODE_ENV !== 'production') console.error('Simulate payment error:', error);
         res.status(500).json({
             success: false,
             message: 'Error simulating payment'

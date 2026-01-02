@@ -47,7 +47,7 @@ router.post('/', authMiddleware, [
             order
         });
     } catch (error) {
-        console.error('Create order error:', error);
+        if (process.env.NODE_ENV !== 'production') console.error('Create order error:', error);
         res.status(500).json({
             success: false,
             message: 'Server error while creating order'
@@ -69,7 +69,7 @@ router.get('/', authMiddleware, async (req, res) => {
             orders
         });
     } catch (error) {
-        console.error('Get orders error:', error);
+        if (process.env.NODE_ENV !== 'production') console.error('Get orders error:', error);
         res.status(500).json({
             success: false,
             message: 'Server error while fetching orders'
@@ -99,7 +99,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
             order
         });
     } catch (error) {
-        console.error('Get order error:', error);
+        if (process.env.NODE_ENV !== 'production') console.error('Get order error:', error);
         res.status(500).json({
             success: false,
             message: 'Server error while fetching order'
@@ -155,7 +155,7 @@ router.patch('/:id', authMiddleware, async (req, res) => {
             order
         });
     } catch (error) {
-        console.error('Update order error:', error);
+        if (process.env.NODE_ENV !== 'production') console.error('Update order error:', error);
         res.status(500).json({
             success: false,
             message: 'Server error while updating order'

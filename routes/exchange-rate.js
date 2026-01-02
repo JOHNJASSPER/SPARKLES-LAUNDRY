@@ -15,7 +15,7 @@ router.get('/', async (req, res) => {
             lastUpdated: rate.lastUpdated
         });
     } catch (error) {
-        console.error('Get exchange rate error:', error);
+        if (process.env.NODE_ENV !== 'production') console.error('Get exchange rate error:', error);
         res.status(500).json({
             success: false,
             message: 'Error fetching exchange rate'
@@ -46,7 +46,7 @@ router.put('/', authMiddleware, async (req, res) => {
             lastUpdated: updatedRate.lastUpdated
         });
     } catch (error) {
-        console.error('Update exchange rate error:', error);
+        if (process.env.NODE_ENV !== 'production') console.error('Update exchange rate error:', error);
         res.status(500).json({
             success: false,
             message: 'Error updating exchange rate'
@@ -79,7 +79,7 @@ router.get('/convert/:amount', async (req, res) => {
             rate: rate.usdtToNgn
         });
     } catch (error) {
-        console.error('Convert amount error:', error);
+        if (process.env.NODE_ENV !== 'production') console.error('Convert amount error:', error);
         res.status(500).json({
             success: false,
             message: 'Error converting amount'

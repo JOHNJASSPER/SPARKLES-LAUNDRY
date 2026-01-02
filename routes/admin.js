@@ -40,7 +40,7 @@ router.get('/stats', adminAuth, async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Admin stats error:', error);
+        if (process.env.NODE_ENV !== 'production') console.error('Admin stats error:', error);
         res.status(500).json({
             success: false,
             message: 'Error fetching statistics'
@@ -63,7 +63,7 @@ router.get('/orders', adminAuth, async (req, res) => {
             orders
         });
     } catch (error) {
-        console.error('Admin orders error:', error);
+        if (process.env.NODE_ENV !== 'production') console.error('Admin orders error:', error);
         res.status(500).json({
             success: false,
             message: 'Error fetching orders'
@@ -91,7 +91,7 @@ router.get('/orders/:id', adminAuth, async (req, res) => {
             order
         });
     } catch (error) {
-        console.error('Admin order detail error:', error);
+        if (process.env.NODE_ENV !== 'production') console.error('Admin order detail error:', error);
         res.status(500).json({
             success: false,
             message: 'Error fetching order'
@@ -133,7 +133,7 @@ router.patch('/orders/:id/status', adminAuth, async (req, res) => {
             order
         });
     } catch (error) {
-        console.error('Admin update status error:', error);
+        if (process.env.NODE_ENV !== 'production') console.error('Admin update status error:', error);
         res.status(500).json({
             success: false,
             message: 'Error updating order status'
@@ -156,7 +156,7 @@ router.get('/users', adminAuth, async (req, res) => {
             users
         });
     } catch (error) {
-        console.error('Admin users error:', error);
+        if (process.env.NODE_ENV !== 'production') console.error('Admin users error:', error);
         res.status(500).json({
             success: false,
             message: 'Error fetching users'

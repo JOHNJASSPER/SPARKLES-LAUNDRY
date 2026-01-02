@@ -66,7 +66,7 @@ router.post('/register', [
             }
         });
     } catch (error) {
-        console.error('Registration error:', error);
+        if (process.env.NODE_ENV !== 'production') console.error('Registration error:', error);
         res.status(500).json({
             success: false,
             message: 'Server error during registration'
@@ -137,7 +137,7 @@ router.post('/login', [
             }
         });
     } catch (error) {
-        console.error('Login error:', error);
+        if (process.env.NODE_ENV !== 'production') console.error('Login error:', error);
         res.status(500).json({
             success: false,
             message: 'Server error during login'
@@ -206,7 +206,7 @@ router.post('/google', [
             }
         });
     } catch (error) {
-        console.error('Google auth error:', error);
+        if (process.env.NODE_ENV !== 'production') console.error('Google auth error:', error);
         res.status(500).json({
             success: false,
             message: 'Server error during Google authentication'

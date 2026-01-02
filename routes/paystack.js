@@ -87,7 +87,7 @@ router.post('/initialize', protect, async (req, res) => {
         });
 
         paystackReq.on('error', (error) => {
-            console.error('Paystack error:', error);
+            if (process.env.NODE_ENV !== 'production') console.error('Paystack error:', error);
             res.status(500).json({ message: 'Payment initialization failed' });
         });
 
@@ -95,7 +95,7 @@ router.post('/initialize', protect, async (req, res) => {
         paystackReq.end();
 
     } catch (error) {
-        console.error('Payment initialization error:', error);
+        if (process.env.NODE_ENV !== 'production') console.error('Payment initialization error:', error);
         res.status(500).json({ message: 'Server error' });
     }
 });
@@ -153,14 +153,14 @@ router.get('/verify/:reference', protect, async (req, res) => {
         });
 
         paystackReq.on('error', (error) => {
-            console.error('Verification error:', error);
+            if (process.env.NODE_ENV !== 'production') console.error('Verification error:', error);
             res.status(500).json({ message: 'Verification failed' });
         });
 
         paystackReq.end();
 
     } catch (error) {
-        console.error('Payment verification error:', error);
+        if (process.env.NODE_ENV !== 'production') console.error('Payment verification error:', error);
         res.status(500).json({ message: 'Server error' });
     }
 });

@@ -193,7 +193,7 @@ function createItemCard(item) {
 
     // Add event listeners directly to the created buttons
     minusBtn.addEventListener('click', () => {
-        let qty = parseInt(qtyInput.value);
+        let qty = parseInt(qtyInput.value, 10);
         if (qty > 0) {
             qty--;
             qtyInput.value = qty;
@@ -202,7 +202,7 @@ function createItemCard(item) {
     });
 
     plusBtn.addEventListener('click', () => {
-        let qty = parseInt(qtyInput.value);
+        let qty = parseInt(qtyInput.value, 10);
         qty++;
         qtyInput.value = qty;
         updateItemQuantity(item.name, item.price, qty);

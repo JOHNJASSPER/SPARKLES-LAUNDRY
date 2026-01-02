@@ -28,7 +28,9 @@ const apiRequest = async (endpoint, options = {}) => {
 
         return data;
     } catch (error) {
-        console.error('API Request Error:', error);
+        if (typeof process === 'undefined' || process.env?.NODE_ENV !== 'production') {
+            console.error('API Request Error:', error);
+        }
         throw error;
     }
 };

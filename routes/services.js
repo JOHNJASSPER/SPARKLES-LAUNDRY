@@ -106,7 +106,7 @@ router.post('/calculate', (req, res) => {
             totalPrice: totalPrice.toFixed(2)
         });
     } catch (error) {
-        console.error('Calculate price error:', error);
+        if (process.env.NODE_ENV !== 'production') console.error('Calculate price error:', error);
         res.status(500).json({
             success: false,
             message: 'Error calculating price'
