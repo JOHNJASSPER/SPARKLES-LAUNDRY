@@ -2,6 +2,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Check authentication status and update navbar
     updateNavbar();
 
+    // Hide Home button on homepage, show on other pages
+    const homeNavItem = document.getElementById('home-nav-item');
+    if (homeNavItem) {
+        const isHomepage = window.location.pathname === '/' || window.location.pathname === '/index.html';
+        homeNavItem.style.display = isHomepage ? 'none' : 'block';
+    }
+
     // Navbar Scroll Effect
     const navbar = document.getElementById('navbar');
 
