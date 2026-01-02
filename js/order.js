@@ -240,8 +240,8 @@ async function submitOrder() {
         const response = await api.orders.create(orderData);
 
         if (response.success) {
-            // Redirect to checkout for payment
-            window.location.href = '/checkout?orderId=' + response.order._id;
+            // Initialize Paystack payment
+            initializePayment(response.order);
         }
     } catch (error) {
         console.error('Error creating order:', error);
@@ -250,5 +250,86 @@ async function submitOrder() {
         // Re-enable submit button
         submitBtn.disabled = false;
         submitBtn.innerHTML = '<i class="fa-solid fa-check"></i> Place Order';
+    }
+}
+
+// Initialize Paystack payment
+async function initializePayment(order) {
+    const submitBtn = document.getElementById('submit-order-btn');
+
+    try {
+        // Get Paystack public key from environment (you'll need to add this)
+        const PAYSTACK_PUBLIC_KEY = 'pk_test_e0fb17876fd0a75f5192f5cb643e68a98912364e';
+
+        // Initialize payment with backend
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/paystack/initialize', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ orderId: order._id })
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(data.message || 'Payment initialization failed');
+        }
+
+        // Trigger Paystack popup
+        const handler = PaystackPop.setup({
+            key: PAYSTACK_PUBLIC_KEY,
+            email: authHelpers.getUser().email,
+            amount: Math.round(order.totalPrice * 100), // Amount in kobo
+            ref: data.reference,
+            callback: function (response) {
+                // Payment successful
+                verifyPayment(response.reference);
+            },
+            onClose: function () {
+                // User closed payment popup
+                alert('Payment cancelled. You can complete payment from your dashboard.');
+                window.location.href = '/dashboard';
+            }
+        });
+
+        handler.openIframe();
+
+    } catch (error) {
+        console.error('Payment initialization error:', error);
+        alert('Error initializing payment: ' + error.message);
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fa-solid fa-check"></i> Place Order';
+    }
+}
+
+// Verify payment
+async function verifyPayment(reference) {
+    const submitBtn = document.getElementById('submit-order-btn');
+    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verifying Payment...';
+
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/paystack/verify/${reference}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            alert('Payment successful! Your order has been placed.');
+            window.location.href = '/dashboard';
+        } else {
+            throw new Error('Payment verification failed');
+        }
+    } catch (error) {
+        console.error('Payment verification error:', error);
+        alert('Payment verification failed. Please contact support if you were charged.');
+        window.location.href = '/dashboard';
     }
 }

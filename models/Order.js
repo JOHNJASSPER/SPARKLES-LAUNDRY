@@ -59,7 +59,11 @@ const orderSchema = new mongoose.Schema({
     },
     paymentMethod: {
         type: String,
-        enum: ['crypto', 'binance_pay', null],
+        enum: ['crypto', 'binance_pay', 'paystack', null],
+        default: null
+    },
+    paymentReference: {
+        type: String,
         default: null
     },
     paidAmount: {
