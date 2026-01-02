@@ -91,7 +91,7 @@ function createItemCard(item) {
     card.innerHTML = `
         <div class="item-header">
             <h4>${item.name}</h4>
-            <span class="item-price">$${item.price.toFixed(2)}</span>
+            <span class="item-price">₦${item.price.toLocaleString()}</span>
         </div>
         <div class="item-quantity">
             <button class="qty-btn minus" data-item="${item.name}" data-price="${item.price}">
@@ -163,7 +163,7 @@ function updateOrderSummary() {
 
     if (selectedItems.length === 0) {
         summaryItems.innerHTML = '<p class="empty-summary">No items selected yet</p>';
-        totalPrice.textContent = '$0.00';
+        totalPrice.textContent = '₦0';
         submitBtn.disabled = true;
         return;
     }
@@ -180,13 +180,13 @@ function updateOrderSummary() {
             <div class="summary-item">
                 <span class="summary-item-name">${item.name}</span>
                 <span class="summary-item-qty">x${item.quantity}</span>
-                <span class="summary-item-price">$${itemTotal.toFixed(2)}</span>
+                <span class="summary-item-price">₦${itemTotal.toLocaleString()}</span>
             </div>
         `;
     });
 
     summaryItems.innerHTML = summaryHTML;
-    totalPrice.textContent = `$${total.toFixed(2)}`;
+    totalPrice.textContent = `₦${total.toLocaleString()}`;
     submitBtn.disabled = false;
 }
 

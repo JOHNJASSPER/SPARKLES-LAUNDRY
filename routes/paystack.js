@@ -34,6 +34,7 @@ router.post('/initialize', protect, async (req, res) => {
         const params = JSON.stringify({
             email: user.email,
             amount: amountInKobo,
+            currency: 'NGN',
             reference: `ORDER_${order._id}_${Date.now()}`,
             metadata: {
                 orderId: order._id.toString(),

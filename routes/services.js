@@ -1,44 +1,44 @@
 const express = require('express');
 const router = express.Router();
 
-// Service pricing data
+// Service pricing data (NGN - Nigerian Naira)
 const services = {
     'wash-fold': {
         name: 'Wash & Fold',
-        basePrice: 1.50,
-        unit: 'lb',
+        basePrice: 300,
+        unit: 'item',
         items: [
-            { name: 'Regular Clothes (per lb)', price: 1.50 },
-            { name: 'Bedding (per lb)', price: 1.75 },
-            { name: 'Towels (per lb)', price: 1.50 }
+            { name: 'Regular Clothes', price: 300 },
+            { name: 'Bedding', price: 400 },
+            { name: 'Towels', price: 250 }
         ]
     },
     'dry-clean': {
         name: 'Dry Cleaning',
-        basePrice: 5.00,
+        basePrice: 1000,
         unit: 'item',
         items: [
-            { name: 'Shirt', price: 5.00 },
-            { name: 'Pants', price: 7.00 },
-            { name: 'Suit (2-piece)', price: 15.00 },
-            { name: 'Suit (3-piece)', price: 20.00 },
-            { name: 'Dress', price: 12.00 },
-            { name: 'Coat/Jacket', price: 12.00 },
-            { name: 'Tie', price: 5.00 },
-            { name: 'Sweater', price: 8.00 }
+            { name: 'Shirt', price: 800 },
+            { name: 'Pants', price: 1000 },
+            { name: 'Suit (2-piece)', price: 2500 },
+            { name: 'Suit (3-piece)', price: 3500 },
+            { name: 'Dress', price: 1500 },
+            { name: 'Coat/Jacket', price: 1800 },
+            { name: 'Tie', price: 500 },
+            { name: 'Sweater', price: 1200 }
         ]
     },
     'comforter': {
         name: 'Comforters & Large Items',
-        basePrice: 25.00,
+        basePrice: 3000,
         unit: 'item',
         items: [
-            { name: 'Comforter (Twin)', price: 20.00 },
-            { name: 'Comforter (Full/Queen)', price: 25.00 },
-            { name: 'Comforter (King)', price: 30.00 },
-            { name: 'Duvet Cover', price: 15.00 },
-            { name: 'Blanket', price: 15.00 },
-            { name: 'Curtains (per panel)', price: 12.00 }
+            { name: 'Comforter (Twin)', price: 2500 },
+            { name: 'Comforter (Full/Queen)', price: 3000 },
+            { name: 'Comforter (King)', price: 3500 },
+            { name: 'Duvet Cover', price: 2000 },
+            { name: 'Blanket', price: 2000 },
+            { name: 'Curtains (per panel)', price: 1500 }
         ]
     }
 };

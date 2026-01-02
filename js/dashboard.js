@@ -122,7 +122,7 @@ function createOrderCard(order) {
         </div>
 
         <div class="order-total">
-            <h3>$${order.totalPrice.toFixed(2)}</h3>
+            <h3>₦${order.totalPrice.toLocaleString()}</h3>
         </div>
     `;
 
@@ -159,5 +159,5 @@ function updateStats(orders, totalCount) {
 
     // Total spent
     const totalSpent = orders.reduce((sum, order) => sum + order.totalPrice, 0);
-    document.getElementById('total-spent').textContent = `$${totalSpent.toFixed(2)}`;
+    document.getElementById('total-spent').textContent = `₦${totalSpent.toLocaleString()}`;
 }
