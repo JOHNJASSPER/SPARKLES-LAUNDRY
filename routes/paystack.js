@@ -2,12 +2,19 @@ const express = require('express');
 const router = express.Router();
 const protect = require('../middleware/auth');
 const Order = require('../models/Order');
+const User = require('../models/User');
 const https = require('https');
 
 // Initialize payment
 router.post('/initialize', protect, async (req, res) => {
     try {
         const { orderId } = req.body;
+
+        // Get user
+        const user = await User.findById(req.userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
 
         // Get order
         const order = await Order.findById(orderId);
@@ -16,7 +23,7 @@ router.post('/initialize', protect, async (req, res) => {
         }
 
         // Check if user owns this order
-        if (order.user.toString() !== req.user._id.toString()) {
+        if (order.userId.toString() !== req.userId.toString()) {
             return res.status(403).json({ message: 'Not authorized' });
         }
 
@@ -25,12 +32,12 @@ router.post('/initialize', protect, async (req, res) => {
 
         // Prepare Paystack payment initialization
         const params = JSON.stringify({
-            email: req.user.email,
+            email: user.email,
             amount: amountInKobo,
             reference: `ORDER_${order._id}_${Date.now()}`,
             metadata: {
                 orderId: order._id.toString(),
-                customerName: req.user.name
+                customerName: user.name
             },
             callback_url: `${process.env.APP_URL || 'https://sparkles-laundry.onrender.com'}/dashboard`
         });
