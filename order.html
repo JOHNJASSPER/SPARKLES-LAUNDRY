@@ -113,6 +113,31 @@
                             <div id="summary-items" class="summary-items">
                                 <p class="empty-summary">No items selected yet</p>
                             </div>
+
+                            <div class="payment-methods">
+                                <h4>Payment Method</h4>
+                                <div class="payment-option selected"
+                                    onclick="document.getElementById('paystack').click()">
+                                    <input type="radio" id="paystack" name="payment-method" value="paystack" checked>
+                                    <label for="paystack">
+                                        <div class="method-info">
+                                            <span class="method-title">Paystack (Naira)</span>
+                                            <span class="method-desc">Card, Bank Transfer, USSD</span>
+                                        </div>
+                                        <i class="fa-solid fa-credit-card"></i>
+                                    </label>
+                                </div>
+                                <div class="payment-option" onclick="document.getElementById('usdt').click()">
+                                    <input type="radio" id="usdt" name="payment-method" value="usdt">
+                                    <label for="usdt">
+                                        <div class="method-info">
+                                            <span class="method-title">USDT (TRC20)</span>
+                                            <span class="method-desc" id="usdt-amount-display">~0.00 USDT</span>
+                                        </div>
+                                        <i class="fa-brands fa-bitcoin"></i>
+                                    </label>
+                                </div>
+                            </div>
                             <div class="summary-total">
                                 <h3>Total:</h3>
                                 <h3 id="total-price">₦0</h3>

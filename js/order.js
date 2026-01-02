@@ -1,8 +1,10 @@
-// Last deployed: 2026-01-02 - Paystack Integration
+// Last deployed: 2026-01-02 - Multi-currency Payment Support
 // Order page functionality
 let selectedService = null;
 let selectedItems = [];
 let servicesData = null;
+let exchangeRate = 1450; // Default fallback
+let selectedPaymentMethod = 'paystack';
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Check authentication
@@ -19,8 +21,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Load services data
     await loadServices();
 
+    // Load exchange rate
+    await loadExchangeRate();
+
     // Setup service selection
     setupServiceSelection();
+
+    // Setup payment selection
+    setupPaymentSelection();
 
     // Setup submit button
     document.getElementById('submit-order-btn').addEventListener('click', submitOrder);
@@ -34,6 +42,19 @@ async function loadServices() {
     } catch (error) {
         console.error('Error loading services:', error);
         alert('Error loading services. Please refresh the page.');
+    }
+}
+
+// Load exchange rate
+async function loadExchangeRate() {
+    try {
+        const response = await fetch('/api/exchange-rate');
+        const data = await response.json();
+        if (data.success) {
+            exchangeRate = data.rate;
+        }
+    } catch (error) {
+        console.error('Error loading exchange rate:', error);
     }
 }
 
@@ -62,6 +83,43 @@ function setupServiceSelection() {
 
             // Update summary
             updateOrderSummary();
+        });
+    });
+}
+
+// Setup payment method selection
+function setupPaymentSelection() {
+    const paymentOptions = document.querySelectorAll('.payment-option');
+    const radioButtons = document.getElementsByName('payment-method');
+
+    // Handle clicks on the option div
+    paymentOptions.forEach(option => {
+        option.addEventListener('click', () => {
+            // Update UI
+            paymentOptions.forEach(opt => opt.classList.remove('selected'));
+            option.classList.add('selected');
+
+            // Select radio button
+            const radio = option.querySelector('input[type="radio"]');
+            radio.checked = true;
+            selectedPaymentMethod = radio.value;
+        });
+    });
+
+    // Handle direct radio button changes
+    radioButtons.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                selectedPaymentMethod = e.target.value;
+                // Update UI to match
+                paymentOptions.forEach(opt => {
+                    if (opt.querySelector('input').value === selectedPaymentMethod) {
+                        opt.classList.add('selected');
+                    } else {
+                        opt.classList.remove('selected');
+                    }
+                });
+            }
         });
     });
 }
@@ -187,6 +245,14 @@ function updateOrderSummary() {
 
     summaryItems.innerHTML = summaryHTML;
     totalPrice.textContent = `₦${total.toLocaleString()}`;
+
+    // Update USDT estimate
+    const usdtAmount = total / exchangeRate;
+    const usdtDisplay = document.getElementById('usdt-amount-display');
+    if (usdtDisplay) {
+        usdtDisplay.textContent = `~${usdtAmount.toFixed(2)} USDT`;
+    }
+
     submitBtn.disabled = false;
 }
 
@@ -241,8 +307,13 @@ async function submitOrder() {
         const response = await api.orders.create(orderData);
 
         if (response.success) {
-            // Initialize Paystack payment
-            initializePayment(response.order);
+            if (selectedPaymentMethod === 'paystack') {
+                // Initialize Paystack payment
+                initializePayment(response.order);
+            } else {
+                // Initialize Binance Pay (USDT)
+                initializeBinancePayment(response.order);
+            }
         }
     } catch (error) {
         console.error('Error creating order:', error);
@@ -254,12 +325,52 @@ async function submitOrder() {
     }
 }
 
+// Initialize Binance Pay payment
+async function initializeBinancePayment(order) {
+    const submitBtn = document.getElementById('submit-order-btn');
+
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/payments/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ orderId: order._id })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            if (data.paymentData && data.paymentData.checkoutUrl) {
+                // Redirect to Binance Pay
+                window.location.href = data.paymentData.checkoutUrl;
+            } else if (data.demoMode) {
+                // Handle demo mode
+                alert(`DEMO MODE: Payment simulated for ${data.paymentData.amount} USDT`);
+                window.location.href = '/dashboard';
+            } else {
+                throw new Error('Invalid payment response');
+            }
+        } else {
+            throw new Error(data.message || 'Payment creation failed');
+        }
+
+    } catch (error) {
+        console.error('Binance Pay initialization error:', error);
+        alert('Error initializing USDT payment: ' + error.message);
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fa-solid fa-check"></i> Place Order';
+    }
+}
+
 // Initialize Paystack payment
 async function initializePayment(order) {
     const submitBtn = document.getElementById('submit-order-btn');
 
     try {
-        // Get Paystack public key from environment (you'll need to add this)
+        // Get Paystack public key
         const PAYSTACK_PUBLIC_KEY = 'pk_test_e0fb17876fd0a75f5192f5cb643e68a98912364e';
 
         // Initialize payment with backend
@@ -285,6 +396,7 @@ async function initializePayment(order) {
             email: authHelpers.getUser().email,
             amount: Math.round(order.totalPrice * 100), // Amount in kobo
             ref: data.reference,
+            currency: 'NGN', // Explicitly set currency
             callback: function (response) {
                 // Payment successful
                 verifyPayment(response.reference);
