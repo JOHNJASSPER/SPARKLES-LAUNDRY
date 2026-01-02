@@ -14,16 +14,31 @@ app.use(express.urlencoded({ extended: true }));
 // Serve static files (HTML, CSS, JS, images)
 app.use(express.static(path.join(__dirname)));
 
-// MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-})
-    .then(() => console.log('✅ MongoDB connected successfully'))
-    .catch(err => {
+// MongoDB Connection Strategy (Serverless & Local)
+let isConnected = false; // Track connection status
+
+const connectDB = async () => {
+    if (isConnected) {
+        return;
+    }
+
+    try {
+        const db = await mongoose.connect(process.env.MONGODB_URI);
+        isConnected = db.connections[0].readyState;
+        console.log('✅ MongoDB connected successfully');
+    } catch (err) {
         console.error('❌ MongoDB connection error:', err);
-        console.log('⚠️  Server will continue running, but database features will not work');
-    });
+        lastError = err.message;
+    }
+};
+
+let lastError = null;
+
+// Middleware to ensure DB is connected before handling requests
+app.use(async (req, res, next) => {
+    await connectDB();
+    next();
+});
 
 // API Routes
 app.use('/api/auth', require('./routes/auth'));
@@ -34,10 +49,15 @@ app.use('/api/payments', require('./routes/payments'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
+    const uriRaw = process.env.MONGODB_URI || '';
+    const uriCheck = uriRaw.length > 20 ? uriRaw.substring(0, 25) + '...' : 'Invalid/Short';
+
     res.json({
         success: true,
         message: 'Server is running',
-        mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+        mongodb: isConnected === 1 ? 'connected' : 'disconnected',
+        error: lastError,
+        uriCheck: uriCheck
     });
 });
 
@@ -88,9 +108,17 @@ app.use((req, res) => {
 });
 
 // Start server
+// Start server
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
-    console.log(`📱 Frontend: http://localhost:${PORT}`);
-    console.log(`🔌 API: http://localhost:${PORT}/api`);
-});
+
+// Only listen if run directly (development), not if imported (Vercel)
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`🚀 Server running on http://localhost:${PORT}`);
+        console.log(`📱 Frontend: http://localhost:${PORT}`);
+        console.log(`🔌 API: http://localhost:${PORT}/api`);
+    });
+}
+
+// Export for Vercel
+module.exports = app;
