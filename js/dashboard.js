@@ -11,6 +11,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('user-name').textContent = user.name;
     }
 
+    // Hide Dashboard button on dashboard page
+    const dashboardNavItem = document.getElementById('dashboard-nav-item');
+    if (dashboardNavItem) {
+        dashboardNavItem.style.display = 'none';
+    }
+
     // Setup logout button
     document.getElementById('logout-btn').addEventListener('click', (e) => {
         e.preventDefault();
