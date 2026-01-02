@@ -80,10 +80,18 @@ function updateNavbar() {
     const user = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null;
 
     if (isAuthenticated && user) {
-        // User is logged in - show Dashboard
-        authNavItem.innerHTML = `
-            <a href="/dashboard" class="nav-link">Dashboard</a>
-        `;
+        // User is logged in
+        if (user.email === 'admin@sparkles.com') {
+            // Show Admin Panel for admin
+            authNavItem.innerHTML = `
+                <a href="/admin" class="nav-link" style="color: var(--primary-color); font-weight: bold;">Admin Panel</a>
+            `;
+        } else {
+            // Show Dashboard for regular users
+            authNavItem.innerHTML = `
+                <a href="/dashboard" class="nav-link">Dashboard</a>
+            `;
+        }
     } else {
         // User is not logged in - show Login
         authNavItem.innerHTML = `
