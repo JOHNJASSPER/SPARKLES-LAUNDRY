@@ -1,4 +1,7 @@
-require('dotenv').config();
+// Load .env only in local development (file won't exist on Vercel)
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config();
+}
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
