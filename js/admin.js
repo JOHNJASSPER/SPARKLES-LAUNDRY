@@ -226,3 +226,80 @@ async function updateOrderStatus() {
     confirmBtn.disabled = false;
     confirmBtn.innerHTML = 'Update Status';
 }
+
+// Exchange Rate Management
+async function loadExchangeRate() {
+    try {
+        const response = await fetch('/api/exchange-rate');
+        const data = await response.json();
+
+        if (data.success) {
+            document.getElementById('current-exchange-rate').textContent = '₦' + data.rate.toLocaleString();
+            document.getElementById('modal-current-rate').textContent = data.rate.toLocaleString();
+            document.getElementById('new-exchange-rate').value = data.rate;
+        }
+    } catch (error) {
+        console.error('Error loading exchange rate:', error);
+    }
+}
+
+function openExchangeRateModal() {
+    document.getElementById('exchange-rate-modal').style.display = 'flex';
+}
+
+function closeExchangeRateModal() {
+    document.getElementById('exchange-rate-modal').style.display = 'none';
+}
+
+async function updateExchangeRate() {
+    const newRate = parseFloat(document.getElementById('new-exchange-rate').value);
+    const confirmBtn = document.getElementById('confirm-rate-update');
+
+    if (!newRate || newRate <= 0) {
+        alert('Please enter a valid rate');
+        return;
+    }
+
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Updating...';
+
+    try {
+        const response = await fetch('/api/exchange-rate', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({ rate: newRate })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            alert('Exchange rate updated successfully');
+            closeExchangeRateModal();
+            await loadExchangeRate();
+            await loadStats(); // Re-load stats as they may depend on currency
+        } else {
+            alert('Error: ' + data.message);
+        }
+    } catch (error) {
+        console.error('Error updating exchange rate:', error);
+        alert('Error updating exchange rate');
+    }
+
+    confirmBtn.disabled = false;
+    confirmBtn.innerHTML = 'Update Rate';
+}
+
+// Setup Exchange Rate Modal Listeners
+document.getElementById('cancel-rate-modal').addEventListener('click', closeExchangeRateModal);
+document.getElementById('confirm-rate-update').addEventListener('click', updateExchangeRate);
+
+// Add to DOMContentLoaded
+document.addEventListener('DOMContentLoaded', async () => {
+    // ... (existing code) ...
+
+    // Load Exchange Rate
+    await loadExchangeRate();
+});

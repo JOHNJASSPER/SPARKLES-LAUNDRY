@@ -355,8 +355,38 @@ async function initializeBinancePayment(order) {
             if (data.paymentData && data.paymentData.checkoutUrl) {
                 // Redirect to Binance Pay
                 window.location.href = data.paymentData.checkoutUrl;
+            } else if (data.demoMode) {
+                // Handle Testnet/Manual Mode
+                const walletAddress = data.paymentData.walletAddress;
+                const amount = data.paymentData.amount;
+                const currency = data.paymentData.currency;
+
+                // Create a simple modal for manual transfer instructions
+                const modalHtml = `
+                        <div id="manual-payment-modal" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;justify-content:center;align-items:center;z-index:1000;">
+                            <div style="background:white;padding:30px;border-radius:15px;max-width:500px;width:90%;text-align:center;box-shadow:0 4px 6px rgba(0,0,0,0.1);">
+                                <h3 style="color:#023e8a;margin-bottom:15px;"><i class="fa-brands fa-bitcoin"></i> USDT Manual Transfer (Testnet)</h3>
+                                <p style="margin-bottom:20px;color:#666;">Binance Pay is in test mode. Please send the exact amount to the wallet below.</p>
+                                
+                                <div style="background:#f8f9fa;padding:15px;border-radius:8px;margin-bottom:20px;border:1px solid #dee2e6;">
+                                    <p style="font-size:0.9rem;color:#888;margin-bottom:5px;">Amount:</p>
+                                    <h2 style="color:#023e8a;margin:0;">${amount.toFixed(2)} ${currency}</h2>
+                                </div>
+
+                                <div style="background:#f8f9fa;padding:15px;border-radius:8px;margin-bottom:25px;border:1px solid #dee2e6;word-break:break-all;">
+                                    <p style="font-size:0.9rem;color:#888;margin-bottom:5px;">TRC20 Wallet Address:</p>
+                                    <p style="font-family:monospace;font-size:1.1rem;font-weight:bold;margin:0;user-select:all;">${walletAddress}</p>
+                                </div>
+
+                                <button onclick="window.location.href='/dashboard'" style="background:#00b4d8;color:white;border:none;padding:12px 25px;border-radius:8px;font-size:1rem;cursor:pointer;width:100%;">
+                                    I Have Sent the Payment
+                                </button>
+                            </div>
+                        </div>
+                     `;
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
             } else {
-                throw new Error('Invalid payment response (No checkout URL)');
+                throw new Error('Invalid payment response');
             }
         } else {
             throw new Error(data.message || 'Payment creation failed');

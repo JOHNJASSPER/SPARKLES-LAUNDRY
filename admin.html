@@ -81,13 +81,14 @@
                             <p>Total Revenue</p>
                         </div>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card" style="cursor: pointer;" onclick="openExchangeRateModal()">
                         <div class="stat-icon" style="background: #f3e5f5;">
-                            <i class="fa-solid fa-users" style="color: #7b1fa2;"></i>
+                            <i class="fa-solid fa-money-bill-transfer" style="color: #7b1fa2;"></i>
                         </div>
                         <div class="stat-content">
-                            <h3 id="total-users">0</h3>
-                            <p>Total Customers</p>
+                            <h3 id="current-exchange-rate">₦1,450</h3>
+                            <p>1 USDT Rate <i class="fa-solid fa-pencil"
+                                    style="font-size: 0.8em; margin-left: 5px;"></i></p>
                         </div>
                     </div>
                 </div>
@@ -151,6 +152,25 @@
             <div class="modal-actions">
                 <button class="btn btn-outline" id="cancel-modal">Cancel</button>
                 <button class="btn btn-primary" id="confirm-status">Update Status</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exchange Rate Modal -->
+    <div id="exchange-rate-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3><i class="fa-solid fa-money-bill-transfer"></i> Update USDT Rate</h3>
+            <p>Current Rate: <strong>1 USDT = ₦<span id="modal-current-rate">1450</span></strong></p>
+
+            <div class="form-group" style="margin: 20px 0;">
+                <label for="new-exchange-rate">New Rate (NGN)</label>
+                <input type="number" id="new-exchange-rate" class="form-control" placeholder="e.g. 1500" min="1"
+                    step="0.01">
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-outline" id="cancel-rate-modal">Cancel</button>
+                <button class="btn btn-primary" id="confirm-rate-update">Update Rate</button>
             </div>
         </div>
     </div>

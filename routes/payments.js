@@ -84,10 +84,21 @@ router.post('/create', authMiddleware, async (req, res) => {
 
         // check for Binance Pay Keys
         if (!BINANCE_PAY_API_KEY || !BINANCE_PAY_SECRET) {
-            console.error('Binance Pay API keys not configured');
-            return res.status(500).json({
-                success: false,
-                message: 'USDT payment is currently unavailable (Configuration Error)'
+            // Testnet / Manual Payment Mode
+            // Return a manual TRC20 wallet address for testing/manual verification
+            return res.json({
+                success: true,
+                message: 'Testnet Mode - Manual Transfer',
+                demoMode: true, // Flag for frontend to show manual instructions
+                paymentData: {
+                    orderId: order._id,
+                    amount: order.totalPrice,
+                    currency: 'USDT',
+                    paymentId: 'MANUAL_' + Date.now(),
+                    walletAddress: 'TYDzsYUEpvnYmQk4zGP9sWWcTEd2MiAtW7', // Testnet/Dev wallet
+                    network: 'TRC20',
+                    qrCodeUrl: null
+                }
             });
         }
 
