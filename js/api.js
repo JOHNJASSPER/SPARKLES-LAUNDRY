@@ -1,5 +1,5 @@
-// API Base URL
-const API_URL = 'http://localhost:3000/api';
+// API Base URL - uses relative path so it works in both dev and production
+const API_URL = '/api';
 
 // HTTP request wrapper with JWT token
 const apiRequest = async (endpoint, options = {}) => {
