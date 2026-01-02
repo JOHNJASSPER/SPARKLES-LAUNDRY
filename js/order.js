@@ -289,7 +289,7 @@ async function submitOrder() {
     );
 
     // Check for minimum USDT amount if USDT is selected
-    const exchangeRateDoc = await ExchangeRate.getRate(); // wait, we don't have direct DB access. use loaded rate.
+    // Note: exchangeRate is already loaded globally via loadExchangeRate()
     const usdtAmount = totalPrice / exchangeRate;
 
     if (selectedPaymentMethod === 'usdt' && usdtAmount < 5) {
