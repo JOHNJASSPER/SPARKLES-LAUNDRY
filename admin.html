@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sparkles Laundry Admin Dashboard">
+    <title>Admin Dashboard | Sparkles Laundry</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/admin.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar scrolled" id="navbar">
+        <div class="container nav-container">
+            <a href="/" class="logo">
+                <img src="assets/logo-clean.png" alt="Sparkles Laundry Logo">
+            </a>
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="/" class="nav-link">Home</a></li>
+                <li class="nav-item"><a href="/admin" class="nav-link active">Admin</a></li>
+                <li class="nav-item"><a href="#" class="nav-link" id="logout-btn">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <div class="container">
+            <!-- Admin Header -->
+            <div class="admin-header">
+                <h1><i class="fa-solid fa-shield-halved"></i> Admin Dashboard</h1>
+                <div class="admin-badge">
+                    <i class="fa-solid fa-crown"></i> Administrator
+                </div>
+            </div>
+
+            <!-- Access Denied Message (shown if not admin) -->
+            <div id="access-denied" class="access-denied" style="display: none;">
+                <i class="fa-solid fa-lock"></i>
+                <h2>Access Denied</h2>
+                <p>You don't have permission to access this page. Admin privileges required.</p>
+                <a href="/dashboard" class="btn btn-primary">Go to Dashboard</a>
+            </div>
+
+            <!-- Admin Content -->
+            <div id="admin-content" style="display: none;">
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #e3f2fd;">
+                            <i class="fa-solid fa-shopping-bag" style="color: #1976d2;"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="total-orders">0</h3>
+                            <p>Total Orders</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #fff3e0;">
+                            <i class="fa-solid fa-clock" style="color: #f57c00;"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="pending-orders">0</h3>
+                            <p>Pending Orders</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #e8f5e9;">
+                            <i class="fa-solid fa-dollar-sign" style="color: #388e3c;"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="total-revenue">$0</h3>
+                            <p>Total Revenue</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #f3e5f5;">
+                            <i class="fa-solid fa-users" style="color: #7b1fa2;"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="total-users">0</h3>
+                            <p>Total Customers</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Orders Table -->
+                <div class="orders-section">
+                    <div class="section-header-row">
+                        <h2><i class="fa-solid fa-list"></i> All Orders</h2>
+                        <div class="filter-group">
+                            <select id="status-filter">
+                                <option value="all">All Statuses</option>
+                                <option value="pending">Pending</option>
+                                <option value="processing">Processing</option>
+                                <option value="completed">Completed</option>
+                                <option value="delivered">Delivered</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="loading-orders" class="loading-state">
+                        <i class="fa-solid fa-spinner fa-spin"></i> Loading orders...
+                    </div>
+
+                    <div id="orders-table-container" style="display: none;">
+                        <table class="orders-table">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Customer</th>
+                                    <th>Service</th>
+                                    <th>Total</th>
+                                    <th>Payment</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orders-table-body">
+                                <!-- Orders will be inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Update Modal -->
+    <div id="status-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3>Update Order Status</h3>
+            <p>Order: <strong id="modal-order-id"></strong></p>
+            <select id="new-status">
+                <option value="pending">Pending</option>
+                <option value="processing">Processing</option>
+                <option value="completed">Completed</option>
+                <option value="delivered">Delivered</option>
+                <option value="cancelled">Cancelled</option>
+            </select>
+            <div class="modal-actions">
+                <button class="btn btn-outline" id="cancel-modal">Cancel</button>
+                <button class="btn btn-primary" id="confirm-status">Update Status</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+
+</html>

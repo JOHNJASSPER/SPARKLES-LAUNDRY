@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Complete your payment">
+    <title>Checkout | Sparkles Laundry</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/auth.css">
+    <link rel="stylesheet" href="css/checkout.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="checkout-container">
+        <div class="checkout-box">
+            <div class="checkout-header">
+                <a href="/" class="logo-link">
+                    <img src="assets/logo-clean.png" alt="Sparkles Laundry Logo" class="auth-logo">
+                </a>
+                <h1><i class="fa-solid fa-wallet"></i> Complete Payment</h1>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loading-state" class="loading-state">
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                <p>Loading payment details...</p>
+            </div>
+
+            <!-- Error State -->
+            <div id="error-state" class="error-state" style="display: none;">
+                <i class="fa-solid fa-exclamation-circle"></i>
+                <h3>Error</h3>
+                <p id="error-message">Something went wrong</p>
+                <a href="/dashboard" class="btn btn-primary">Back to Dashboard</a>
+            </div>
+
+            <!-- Payment Content -->
+            <div id="payment-content" style="display: none;">
+                <!-- Order Summary -->
+                <div class="order-summary-box">
+                    <h3>Order Summary</h3>
+                    <div class="summary-row">
+                        <span>Order ID:</span>
+                        <strong id="order-id">#--------</strong>
+                    </div>
+                    <div class="summary-row">
+                        <span>Service:</span>
+                        <span id="order-service">-</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Total Amount:</span>
+                        <strong id="order-total">$0.00</strong>
+                    </div>
+                </div>
+
+                <!-- Crypto Payment Section -->
+                <div class="crypto-payment">
+                    <h3><i class="fa-brands fa-bitcoin"></i> Pay with Cryptocurrency</h3>
+                    <p class="crypto-info">Send the exact amount to the wallet address below:</p>
+
+                    <!-- Amount Display -->
+                    <div class="amount-display">
+                        <div class="amount-value" id="crypto-amount">0.00 USDT</div>
+                        <div class="network-badge">TRC20 Network</div>
+                    </div>
+
+                    <!-- Wallet Address -->
+                    <div class="wallet-section">
+                        <label>Wallet Address (USDT TRC20)</label>
+                        <div class="wallet-address-box">
+                            <input type="text" id="wallet-address" readonly value="Loading...">
+                            <button class="copy-btn" id="copy-btn">
+                                <i class="fa-solid fa-copy"></i>
+                            </button>
+                        </div>
+                        <small>Only send USDT on the TRC20 network to this address</small>
+                    </div>
+
+                    <!-- QR Code -->
+                    <div class="qr-section">
+                        <div class="qr-placeholder" id="qr-code">
+                            <i class="fa-solid fa-qrcode"></i>
+                            <p>QR Code</p>
+                        </div>
+                    </div>
+
+                    <!-- Payment Status -->
+                    <div class="payment-status" id="payment-status">
+                        <div class="status-indicator waiting">
+                            <i class="fa-solid fa-clock"></i>
+                            <span>Waiting for payment...</span>
+                        </div>
+                    </div>
+
+                    <!-- Demo Mode Notice -->
+                    <div class="demo-notice" id="demo-notice" style="display: none;">
+                        <i class="fa-solid fa-info-circle"></i>
+                        <p>Demo Mode: Binance Pay is not configured. Use the button below to simulate payment.</p>
+                        <button class="btn btn-primary" id="simulate-payment-btn">
+                            <i class="fa-solid fa-check"></i> Simulate Payment
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="checkout-actions">
+                    <a href="/dashboard" class="btn btn-outline">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+
+            <!-- Success State -->
+            <div id="success-state" style="display: none;">
+                <div class="success-content">
+                    <div class="success-icon">
+                        <i class="fa-solid fa-check-circle"></i>
+                    </div>
+                    <h2>Payment Successful!</h2>
+                    <p>Your order has been confirmed and is being processed.</p>
+                    <a href="/dashboard" class="btn btn-primary btn-lg">
+                        <i class="fa-solid fa-home"></i> Go to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/checkout.js"></script>
+</body>
+
+</html>

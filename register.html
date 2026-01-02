@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Create your Sparkles Laundry account">
+    <title>Register | Sparkles Laundry</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/auth.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;600;700&family=Outfit:wght@300;400;600;700&display=swap"
+        rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="auth-container">
+        <div class="auth-box">
+            <div class="auth-header">
+                <a href="/" class="logo-link">
+                    <img src="assets/logo-clean.png" alt="Sparkles Laundry Logo" class="auth-logo">
+                </a>
+                <h1>Create Account</h1>
+                <p>Join Sparkles Laundry today</p>
+            </div>
+
+            <div id="error-message" class="error-message" style="display: none;"></div>
+
+            <form id="register-form" class="auth-form">
+                <div class="form-group">
+                    <label for="name">
+                        <i class="fa-solid fa-user"></i> Full Name
+                    </label>
+                    <input type="text" id="name" name="name" required placeholder="John Doe">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">
+                        <i class="fa-solid fa-envelope"></i> Email
+                    </label>
+                    <input type="email" id="email" name="email" required placeholder="your@email.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">
+                        <i class="fa-solid fa-lock"></i> Password
+                    </label>
+                    <input type="password" id="password" name="password" required placeholder="Minimum 6 characters"
+                        minlength="6">
+                    <small>Must be at least 6 characters</small>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block" id="register-btn">
+                    <span class="btn-text">Create Account</span>
+                    <span class="btn-loader" style="display: none;">
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                    </span>
+                </button>
+            </form>
+
+            <div class="divider">
+                <span>OR</span>
+            </div>
+
+            <button class="btn btn-google" id="google-signup-btn">
+                <i class="fa-brands fa-google"></i> Sign up with Google
+            </button>
+
+            <div class="auth-footer">
+                <p>Already have an account? <a href="/login">Login here</a></p>
+                <p><a href="/">← Back to Home</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+</body>
+
+</html>

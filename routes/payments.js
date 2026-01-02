@@ -1,0 +1,270 @@
+const express = require('express');
+const router = express.Router();
+const crypto = require('crypto');
+const authMiddleware = require('../middleware/auth');
+const Order = require('../models/Order');
+
+// Binance Pay Configuration
+const BINANCE_PAY_API_KEY = process.env.BINANCE_PAY_API_KEY || '';
+const BINANCE_PAY_SECRET = process.env.BINANCE_PAY_SECRET || '';
+const BINANCE_MERCHANT_ID = process.env.BINANCE_MERCHANT_ID || '';
+const BINANCE_PAY_BASE_URL = 'https://bpay.binanceapi.com';
+
+// Generate Binance Pay signature
+function generateSignature(timestamp, nonce, body) {
+    const payload = `${timestamp}\n${nonce}\n${JSON.stringify(body)}\n`;
+    return crypto
+        .createHmac('sha512', BINANCE_PAY_SECRET)
+        .update(payload)
+        .digest('hex')
+        .toUpperCase();
+}
+
+// Generate random nonce
+function generateNonce(length = 32) {
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+}
+
+// @route   POST /api/payments/create
+// @desc    Create a Binance Pay order
+// @access  Private
+router.post('/create', authMiddleware, async (req, res) => {
+    try {
+        const { orderId } = req.body;
+
+        if (!orderId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Order ID is required'
+            });
+        }
+
+        // Find the order
+        const order = await Order.findOne({ _id: orderId, userId: req.userId });
+
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: 'Order not found'
+            });
+        }
+
+        // Check if already paid
+        if (order.paymentStatus === 'paid') {
+            return res.status(400).json({
+                success: false,
+                message: 'Order is already paid'
+            });
+        }
+
+        // If Binance Pay is not configured, return a simulated payment URL
+        if (!BINANCE_PAY_API_KEY || !BINANCE_PAY_SECRET) {
+            // For testing/demo mode - simulate payment
+            const demoPaymentId = 'DEMO_' + Date.now();
+
+            order.paymentId = demoPaymentId;
+            order.paymentMethod = 'crypto';
+            await order.save();
+
+            return res.json({
+                success: true,
+                message: 'Demo mode - Binance Pay not configured',
+                demoMode: true,
+                paymentData: {
+                    orderId: order._id,
+                    amount: order.totalPrice,
+                    currency: 'USDT',
+                    paymentId: demoPaymentId,
+                    // Demo wallet address for display
+                    walletAddress: 'TYDzsYUEpvnYmQk4zGP9sWWcTEd2MiAtW7',
+                    network: 'TRC20',
+                    qrCodeUrl: null
+                }
+            });
+        }
+
+        // Create Binance Pay order
+        const timestamp = Date.now();
+        const nonce = generateNonce();
+        const merchantTradeNo = `SPARKLES_${order._id}_${timestamp}`;
+
+        const requestBody = {
+            env: {
+                terminalType: 'WEB'
+            },
+            merchantTradeNo: merchantTradeNo,
+            orderAmount: order.totalPrice.toFixed(2),
+            currency: 'USDT',
+            goods: {
+                goodsType: '02', // Virtual goods
+                goodsCategory: 'Z000',
+                referenceGoodsId: order._id.toString(),
+                goodsName: `Sparkles Laundry Order #${order._id.toString().slice(-8)}`,
+                goodsDetail: `Laundry service - ${order.serviceType}`
+            },
+            returnUrl: `${process.env.APP_URL || 'http://localhost:3000'}/dashboard`,
+            cancelUrl: `${process.env.APP_URL || 'http://localhost:3000'}/checkout?orderId=${order._id}`,
+            webhookUrl: `${process.env.APP_URL || 'http://localhost:3000'}/api/payments/webhook`
+        };
+
+        const signature = generateSignature(timestamp, nonce, requestBody);
+
+        const response = await fetch(`${BINANCE_PAY_BASE_URL}/binancepay/openapi/v2/order`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'BinancePay-Timestamp': timestamp.toString(),
+                'BinancePay-Nonce': nonce,
+                'BinancePay-Certificate-SN': BINANCE_PAY_API_KEY,
+                'BinancePay-Signature': signature
+            },
+            body: JSON.stringify(requestBody)
+        });
+
+        const data = await response.json();
+
+        if (data.status === 'SUCCESS') {
+            // Update order with payment info
+            order.paymentId = data.data.prepayId;
+            order.paymentMethod = 'binance_pay';
+            await order.save();
+
+            res.json({
+                success: true,
+                paymentData: {
+                    orderId: order._id,
+                    amount: order.totalPrice,
+                    currency: 'USDT',
+                    checkoutUrl: data.data.checkoutUrl,
+                    qrCodeUrl: data.data.qrcodeLink,
+                    prepayId: data.data.prepayId,
+                    expireTime: data.data.expireTime
+                }
+            });
+        } else {
+            res.status(400).json({
+                success: false,
+                message: 'Failed to create payment',
+                error: data.errorMessage || 'Unknown error'
+            });
+        }
+
+    } catch (error) {
+        console.error('Create payment error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error creating payment'
+        });
+    }
+});
+
+// @route   POST /api/payments/webhook
+// @desc    Handle Binance Pay webhook notification
+// @access  Public (verified by signature)
+router.post('/webhook', async (req, res) => {
+    try {
+        const { bizType, data } = req.body;
+
+        if (bizType === 'PAY') {
+            const { merchantTradeNo, orderAmount, transactTime, payerInfo } = data;
+
+            // Extract order ID from merchantTradeNo
+            const parts = merchantTradeNo.split('_');
+            const orderId = parts[1];
+
+            const order = await Order.findById(orderId);
+
+            if (order) {
+                order.paymentStatus = 'paid';
+                order.paidAmount = parseFloat(orderAmount);
+                order.paidCurrency = 'USDT';
+                order.updatedAt = Date.now();
+                await order.save();
+
+                console.log(`Payment confirmed for order ${orderId}`);
+            }
+        }
+
+        res.json({ returnCode: 'SUCCESS', returnMessage: null });
+    } catch (error) {
+        console.error('Webhook error:', error);
+        res.json({ returnCode: 'FAIL', returnMessage: error.message });
+    }
+});
+
+// @route   GET /api/payments/status/:orderId
+// @desc    Check payment status
+// @access  Private
+router.get('/status/:orderId', authMiddleware, async (req, res) => {
+    try {
+        const order = await Order.findOne({
+            _id: req.params.orderId,
+            userId: req.userId
+        });
+
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: 'Order not found'
+            });
+        }
+
+        res.json({
+            success: true,
+            paymentStatus: order.paymentStatus,
+            paidAmount: order.paidAmount,
+            paidCurrency: order.paidCurrency
+        });
+    } catch (error) {
+        console.error('Payment status error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error checking payment status'
+        });
+    }
+});
+
+// @route   POST /api/payments/simulate-payment
+// @desc    Simulate payment for demo mode (testing only)
+// @access  Private
+router.post('/simulate-payment', authMiddleware, async (req, res) => {
+    try {
+        const { orderId } = req.body;
+
+        const order = await Order.findOne({ _id: orderId, userId: req.userId });
+
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: 'Order not found'
+            });
+        }
+
+        // Simulate successful payment
+        order.paymentStatus = 'paid';
+        order.paidAmount = order.totalPrice;
+        order.paidCurrency = 'USDT';
+        order.paymentMethod = 'crypto';
+        order.updatedAt = Date.now();
+        await order.save();
+
+        res.json({
+            success: true,
+            message: 'Payment simulated successfully',
+            order
+        });
+    } catch (error) {
+        console.error('Simulate payment error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error simulating payment'
+        });
+    }
+});
+
+module.exports = router;

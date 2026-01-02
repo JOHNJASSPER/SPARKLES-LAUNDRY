@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Create a new laundry order">
+    <title>Create Order | Sparkles Laundry</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/order.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;600;700&family=Outfit:wght@300;400;600;700&display=swap"
+        rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar scrolled" id="navbar">
+        <div class="container nav-container">
+            <a href="/" class="logo">
+                <img src="assets/logo-clean.png" alt="Sparkles Laundry Logo">
+            </a>
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="/" class="nav-link">Home</a></li>
+                <li class="nav-item"><a href="/dashboard" class="nav-link">Dashboard</a></li>
+                <li class="nav-item"><a href="#" class="nav-link" id="logout-btn">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <div class="container">
+            <div class="order-page">
+                <div class="order-header-section">
+                    <h1><i class="fa-solid fa-shopping-cart"></i> Create New Order</h1>
+                    <a href="/dashboard" class="btn btn-outline">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+
+                <div class="order-content">
+                    <!-- Service Selection -->
+                    <div class="order-section">
+                        <h2>1. Select Service Type</h2>
+                        <div class="service-selector">
+                            <div class="service-option" data-service="wash-fold">
+                                <i class="fa-solid fa-shirt"></i>
+                                <h3>Wash & Fold</h3>
+                                <p>$1.50/lb</p>
+                            </div>
+                            <div class="service-option" data-service="dry-clean">
+                                <i class="fa-solid fa-user-tie"></i>
+                                <h3>Dry Cleaning</h3>
+                                <p>From $5.00/item</p>
+                            </div>
+                            <div class="service-option" data-service="comforter">
+                                <i class="fa-solid fa-bed"></i>
+                                <h3>Comforters</h3>
+                                <p>From $20.00/item</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Items Selection -->
+                    <div class="order-section" id="items-section" style="display: none;">
+                        <h2>2. Select Items</h2>
+                        <div id="items-list" class="items-grid">
+                            <!-- Items will be dynamically loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- Address Information -->
+                    <div class="order-section" id="address-section" style="display: none;">
+                        <h2>3. Pickup & Delivery Information</h2>
+                        <div class="address-form">
+                            <div class="form-group">
+                                <label for="pickup-address">
+                                    <i class="fa-solid fa-location-dot"></i> Pickup Address
+                                </label>
+                                <textarea id="pickup-address" rows="3" required
+                                    placeholder="Enter your pickup address"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="delivery-address">
+                                    <i class="fa-solid fa-house"></i> Delivery Address
+                                </label>
+                                <textarea id="delivery-address" rows="3" required
+                                    placeholder="Enter your delivery address"></textarea>
+                                <small>Leave blank to use same as pickup address</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="special-instructions">
+                                    <i class="fa-solid fa-note-sticky"></i> Special Instructions (Optional)
+                                </label>
+                                <textarea id="special-instructions" rows="3"
+                                    placeholder="Any special requests or instructions"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Order Summary -->
+                    <div class="order-summary-section">
+                        <div class="order-summary">
+                            <h3>Order Summary</h3>
+                            <div id="summary-items" class="summary-items">
+                                <p class="empty-summary">No items selected yet</p>
+                            </div>
+                            <div class="summary-total">
+                                <h3>Total:</h3>
+                                <h3 id="total-price">$0.00</h3>
+                            </div>
+                            <button id="submit-order-btn" class="btn btn-primary btn-block" disabled>
+                                <i class="fa-solid fa-check"></i> Place Order
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/order.js"></script>
+</body>
+
+</html>
