@@ -73,37 +73,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Update navbar based on authentication status
 function updateNavbar() {
-    const navMenu = document.querySelector('.nav-menu');
+    const authNavItem = document.getElementById('auth-nav-item');
+    if (!authNavItem) return;
+
     const isAuthenticated = localStorage.getItem('token');
     const user = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null;
 
-    // Find the last nav item (Book Now button)
-    const lastNavItem = navMenu.querySelector('.nav-item:last-child');
-
     if (isAuthenticated && user) {
-        // User is logged in - show Dashboard and Logout
-        lastNavItem.innerHTML = `
+        // User is logged in - show Dashboard
+        authNavItem.innerHTML = `
             <a href="/dashboard" class="nav-link">Dashboard</a>
         `;
-
-        // Add logout button
-        const logoutItem = document.createElement('li');
-        logoutItem.className = 'nav-item';
-        logoutItem.innerHTML = `<a href="#" class="nav-link" id="logout-btn">Logout</a>`;
-        navMenu.appendChild(logoutItem);
-
-        // Add logout handler
-        document.getElementById('logout-btn').addEventListener('click', (e) => {
-            e.preventDefault();
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            window.location.href = '/';
-        });
     } else {
-        // User is not logged in - show Login button
-        const loginItem = document.createElement('li');
-        loginItem.className = 'nav-item';
-        loginItem.innerHTML = `<a href="/login" class="nav-link">Login</a>`;
-        navMenu.appendChild(loginItem);
+        // User is not logged in - show Login
+        authNavItem.innerHTML = `
+            <a href="/login" class="nav-link">Login</a>
+        `;
     }
 }
