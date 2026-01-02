@@ -23,7 +23,7 @@ router.post('/initialize', protect, async (req, res) => {
         }
 
         // Check if user owns this order
-        if (order.userId.toString() !== req.userId.toString()) {
+        if (order.userId.toString() !== user._id.toString()) {
             return res.status(403).json({ message: 'Not authorized' });
         }
 
